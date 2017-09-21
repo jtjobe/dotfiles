@@ -27,6 +27,7 @@ filetype plugin indent on
 "    End of Plugins
 "=====================
 
+set switchbuf+=split
 set cursorline
 set noswapfile
 set number
@@ -57,8 +58,8 @@ imap kj <esc>
 
 let mapleader = "\<Space>"
 
+nmap <leader>s :Ag<Space>
 nmap <leader>vr :sp $MYVIMRC<CR>
-nmap <leader>so :source $MYVIMRC<CR>
 nmap <leader><leader> i<CR><esc>
 nmap <leader>0 $
 nmap <leader>h <c-w>h
@@ -81,15 +82,19 @@ endfunc
 nnoremap <leader>n :call NumberToggle()<cr>
 
 " Make CtrlP use ag for listing the files. Way faster and no useless files.
-let g:ctrlp_user_command = 'ag %s -l --hidden --nocolor -g ""'
-let g:ctrlp_use_caching = 0
+"let g:ctrlp_user_command = 'ag %s -l --hidden --nocolor -g ""'
+"let g:ctrlp_use_caching = 0
 
 " The Silver Searcher
- if executable('ag')
-   " Use ag over grep
-   set grepprg=ag\ --nogroup\ --nocolor
-   " Use ag in CtrlP for listing files. Lightning fast and respects  .gitignore
-   let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-    "ag is fast enough that CtrlP doesn't need to cache
-   let g:ctrlp_use_caching = 0
- endif
+if executable('ag')
+  " Use Ag over Grep
+  set grepprg=ag\ --nogroup\ --nocolor
+  " Use ag in CtrlP for listing files. Lightning fast and respects
+  let g:ctrlp_user_command = 'ag -Q -l --nocolor --hidden -g "" %s'
+
+  "ag is fast enough that CtrlP doesn't need to cache
+  let g:ctrlp_use_caching = 0
+endif
+
+command -nargs=+ -complete=file -bar Ag silent! grep! <args>|cwindow|redraw!
+
