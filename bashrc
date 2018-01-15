@@ -1,14 +1,4 @@
-alias studio3='ssh centos@ec2-34-192-19-31.compute-1.amazonaws.com'
-alias prodb3='ssh centos@ec2-52-203-21-244.compute-1.amazonaws.com'
-alias ssh_tc_reporter='ssh -i ~/.ssh/tc_reporter.pem centos@ec2-54-87-236-71.compute-1.amazonaws.com'
-# cd $APP to get to app root
-# bundle exec rails c p
-
-alias jgm1='ssh ubuntu@ec2-23-20-228-104.compute-1.amazonaws.com'
-alias stats1="ssh ubuntu@ec2-52-206-251-139.compute-1.amazonaws.com"
-# sudo su - deploy
-# cd /var/www/tunecore/current
-# bundle exec rails c p
+alias songs-up='tcw && cd app/javascript_apps/songs && yarn start'
 
 alias sshkey='cat ~/.ssh/id_rsa.pub'
 
@@ -16,12 +6,33 @@ alias cpu-coffee='caffeinate -t 3600'
 function coffee { caffeinate -t $((3600 * $1)); }
 function ptime { ps -o etime= -p "$1"; }
 function timer {
-  sleep $((60 * $1));
+  sleep $((1 * $1));
   say "time is up mofo";
 }
 function make-csv {
   cat ~/Projects/custom-scripts/csv_template.rb >> $1
 }
+
+function nt {
+  cd ~/WorkNotes/tickets
+  ruby ~/Scripts/string_to_snake_case.rb $*
+}
+
+# docker
+alias drc="docker-compose exec web bundle exec rails c"
+alias dc="docker-compose"
+alias dd="docker-compose down"
+alias dt="docker-compose exec test spring rspec"
+alias du="docker-sync-stack start"
+alias dcl="docker-sync clean"
+alias dr="dd && dcl && du"
+function d-nuke-bomb {
+  docker rm $(docker ps -a -q);
+  docker rmi $(docker images -a -q);
+}
+
+alias brew_all="brew services start mariadb; brew services start postgresql; brew services start redis; sudo brew services start nginx"
+alias brew_stop="brew services stop mariadb; brew services stop postgresql; brew services stop redis; sudo brew services stop nginx"
 
 alias shrug="echo '¯\_(ツ)_/¯'"
 
@@ -34,6 +45,7 @@ alias aliases='vim ~/.bashrc'
 alias v='vim .'
 alias s='sublime .'
 alias e='exit'
+alias h='history'
 
 alias be='bundle exec'
 alias ber='bundle exec rspec -c -fd'
@@ -59,7 +71,7 @@ alias vr='vim ~/.vimrc'
 # Git stuff
 alias g-="git co -"
 alias gb='git branch'
-alias gr='git checkout master && git fetch --prune origin && git pull origin master'
+alias gr='git checkout master && gclean && git fetch --prune origin && git pull origin master'
 alias gc='git checkout'
 alias master='gr'
 alias gbd='git branch -d'
@@ -72,13 +84,22 @@ alias grn='git commit --amend'
 alias gcm='git checkout master '
 alias gs='git status'
 alias grm='gr && git co @{-1} && git rebase master'
-alias gclean="gr && git branch --merged | egrep -v '(^\*|master|dev)' | xargs git branch -d"
+alias gclean="git branch --merged | egrep -v '(^\*|master|dev|ruby-2-sday)' | xargs git branch -d"
+alias grall="social && gr && petri && gr && tcw && gr"
+alias gcb="git name-rev --name-only HEAD"
 alias gd="git diff"
+alias nj="git add . && git commit -m 'WIP commit' && gp"
+alias njk="git add . && git commit -m 'WIP'"
+alias gdm="git diff master...$(gcb)"
 
 function con { git checkout -b $1 && git push --set-upstream origin $1; }
 function ir { git rebase -i HEAD~$1; }
-function nj { git add . && git commit -m ''$1''; }
+function ji { git add . && git commit -m 'WIP commit'; }
 function gD { git branch -D ''$1''; }
+#function gdf {
+  #CURRENT_BRANCH=(gcb);
+  #echo CURRENT_BRANCH;
+#}
 
 function note {
   touch ~/WorkNotes/"$1".txt
@@ -107,9 +128,11 @@ alias social-import-SC='rake jgm:import_artist_content QUEUE=medium SOURCES="sou
 
 ## TC Social - Stats app
 alias stats-up='PORT=9292 foreman start -f Procfile.development'
-alias sinatra-c='bundle exec irb -r app.rb'
+alias sinatra-c='bundle exec irb -r ./app.rb'
 
 # All project shortcuts
+alias crt="cd ~/Projects/CoreData"
+alias crt-up="crt && python manage.py runserver --settings=settings"
 alias tcw-re='cd ~/Projects/tc-www && gr && bers'
 alias social-re='cd ~/Projects/tc-social && gr && social-up'
 alias stats-re='cd ~/Projects/stats && gr && stats-up'
@@ -123,7 +146,7 @@ alias p="petri"
 alias lyric='cd ~/Projects/lyric-reports'
 alias blog='cd ~/Projects/blog'
 alias tunecore='cd ~/Projects/tunecore'
-alias saved-sql='s ~/Projects/custom-scripts/sql_queries.sql'
+alias saved-sql='s ~/Projects/saved_sql_queries'
 
 alias nw='<cmd>D'
 
@@ -138,3 +161,22 @@ eval "$(direnv hook bash)"
 
 alias selenium="selenium-server -p 4444"
 alias headlines="cd ~/Personal/headlines"
+
+ruby1 () {
+  gr
+  cp ../database.yml config/database.yml
+  cp ../braintree.yml config/braintree.yml
+  cp ../trends_database.yml config/trends_database.yml
+  brew services start mariadb
+  brew services start postgresql
+  brew services start redis
+}
+
+ruby2 () {
+  mv config/database.yml ../database.yml
+  mv config/braintree.yml ../braintree.yml
+  mv config/trends_database.yml ../trends_database.yml
+  brew services stop mariadb
+  brew services stop postgresql
+  brew services stop redis
+ }
